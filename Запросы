@@ -1,0 +1,32 @@
+--Return the name of each employee in department 20, each manager above that
+--employee in the hierarchy, the number of levels between manager and
+--employee, and the path between the two.
+
+SELECT last_name "Employee", CONNECT_BY_ROOT last_name
+"Manager",
+LEVEL "level", SYS_CONNECT_BY_PATH(last_name, '/') "Path"
+FROM hr.employees
+WHERE LEVEL > 1 and department_id = 30
+CONNECT BY MANAGER_ID = PRIOR EMPLOYEE_ID
+
+--Возврат общей заработной платы каждого сотрудника в отделе 30 и всех
+--сотрудников ниже этого сотрудника в иерархии.
+
+SELECT name, SUM(salary) "Total_Salary"
+FROM ( SELECT CONNECT_BY_ROOT last_name as name, Salary
+FROM hr.employees
+WHERE department_id = 30
+CONNECT BY PRIOR employee_id = manager_id)
+GROUP BY name
+ORDER BY name, "Total_Salary";
+
+--Использование SIBLINGS ключевого слова для сохранения порядка в иерархии
+
+SELECT last_name, employee_id, manager_id, LEVEL
+FROM hr.employees
+START WITH employee_id = 100
+CONNECT BY PRIOR employee_id = manager_id
+ORDER SIBLINGS BY last_name;
+
+
+
